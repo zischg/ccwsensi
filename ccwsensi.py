@@ -2,11 +2,16 @@
 #Das Modell ueberlagert eine NAIS-Waldstandortskartierung mit einer Karte der Hoehenstufenverschiebung und berechnet die im Klimawandel
 #zu erwartenden Waldstandorte sowie die Baumarten, die auf dem jeweiligen Standort ausfallen bzw. neu aufkommen können
 #Verfahren nach Frehner et al.
-#Andreas Paul Zischg, 23.10.2018
+#Andreas Paul Zischg, 17.02.2019
 
 import numpy
 import arcpy
 import sys
+import os
+sys.path.append("D:/CCW18sensi/code/ccwsensi")
+os.chdir("D:/CCW18sensi/code/ccwsensi")#directory where this script is stored
+print os.getcwd()
+from ccwsensifunctions import *
 #Grundaetzliche Bedingungen
 #moegliche Hoehenstufen im Ausgangsfile
 hoehenstufen=["CO", "SM","UM","OM","HM","SA","OSA"]
@@ -218,8 +223,8 @@ arcpy.CalculateField_management(in_table=stoshape10, field="uebergang", expressi
 #Teile NAISheute in zwei Spalten auf: Hauptstandortstyp und Nebenstandortstyp
 arcpy.AddField_management(in_table=stoshape10, field_name="NAISheuteHaupt", field_type="TEXT", field_precision="", field_scale="", field_length="10", field_alias="", field_is_nullable="NULLABLE", field_is_required="NON_REQUIRED", field_domain="")
 arcpy.AddField_management(in_table=stoshape10, field_name="NAISheuteNeben", field_type="TEXT", field_precision="", field_scale="", field_length="10", field_alias="", field_is_nullable="NULLABLE", field_is_required="NON_REQUIRED", field_domain="")
-arcpy.CalculateField_management(in_table=stoshape10, field="NAISheuteHaupt", expression="0", expression_type="PYTHON", code_block="")
-arcpy.CalculateField_management(in_table=stoshape10, field="NAISheuteNeben", expression="0", expression_type="PYTHON", code_block="")
+arcpy.CalculateField_management(in_table=stoshape10, field="NAISheuteHaupt", expression="''", expression_type="PYTHON", code_block="")
+arcpy.CalculateField_management(in_table=stoshape10, field="NAISheuteNeben", expression="''", expression_type="PYTHON", code_block="")
 #berechne die Spalten Uebergang und Mosaik sowie die Spalten Haupt- und Nebenstandortstyp
 cursor1 = arcpy.da.UpdateCursor(stoshape10, ['NAISheute',"mosaik","uebergang","NAISheuteHaupt","NAISheuteNeben"])
 #loop through the shapefile
@@ -307,6 +312,25 @@ arcpy.AddField_management(in_table=stoshape, field_name="YheuteAchtung", field_t
 arcpy.AddField_management(in_table=stoshape, field_name="YZukunftFoerdern", field_type="TEXT", field_precision="", field_scale="", field_length="800", field_alias="", field_is_nullable="NULLABLE", field_is_required="NON_REQUIRED", field_domain="")
 arcpy.AddField_management(in_table=stoshape, field_name="YZukunftMitnehmen", field_type="TEXT", field_precision="", field_scale="", field_length="800", field_alias="", field_is_nullable="NULLABLE", field_is_required="NON_REQUIRED", field_domain="")
 arcpy.AddField_management(in_table=stoshape, field_name="YZukunftAchtung", field_type="TEXT", field_precision="", field_scale="", field_length="250", field_alias="", field_is_nullable="NULLABLE", field_is_required="NON_REQUIRED", field_domain="")
+
+#delete attributes in case the columns are already existing
+arcpy.CalculateField_management(in_table=stoshape, field="XStandortZukunft", expression='""', expression_type="PYTHON", code_block="")
+arcpy.CalculateField_management(in_table=stoshape, field="XheuteFoerdern", expression='""', expression_type="PYTHON", code_block="")
+arcpy.CalculateField_management(in_table=stoshape, field="XheuteMitnehmen", expression='""', expression_type="PYTHON", code_block="")
+arcpy.CalculateField_management(in_table=stoshape, field="XheuteReduzieren", expression='""', expression_type="PYTHON", code_block="")
+arcpy.CalculateField_management(in_table=stoshape, field="XheuteAchtung", expression='""', expression_type="PYTHON", code_block="")
+arcpy.CalculateField_management(in_table=stoshape, field="XZukunftFoerdern", expression='""', expression_type="PYTHON", code_block="")
+arcpy.CalculateField_management(in_table=stoshape, field="XZukunftMitnehmen", expression='""', expression_type="PYTHON", code_block="")
+arcpy.CalculateField_management(in_table=stoshape, field="XZukunftAchtung", expression='""', expression_type="PYTHON", code_block="")
+
+arcpy.CalculateField_management(in_table=stoshape, field="YStandortZukunft", expression='""', expression_type="PYTHON", code_block="")
+arcpy.CalculateField_management(in_table=stoshape, field="YheuteFoerdern", expression='""', expression_type="PYTHON", code_block="")
+arcpy.CalculateField_management(in_table=stoshape, field="YheuteMitnehmen", expression='""', expression_type="PYTHON", code_block="")
+arcpy.CalculateField_management(in_table=stoshape, field="YheuteReduzieren", expression='""', expression_type="PYTHON", code_block="")
+arcpy.CalculateField_management(in_table=stoshape, field="YheuteAchtung", expression='""', expression_type="PYTHON", code_block="")
+arcpy.CalculateField_management(in_table=stoshape, field="YZukunftFoerdern", expression='""', expression_type="PYTHON", code_block="")
+arcpy.CalculateField_management(in_table=stoshape, field="YZukunftMitnehmen", expression='""', expression_type="PYTHON", code_block="")
+arcpy.CalculateField_management(in_table=stoshape, field="YZukunftAchtung", expression='""', expression_type="PYTHON", code_block="")
 
 
 #*******************************************************************************
@@ -441,242 +465,237 @@ for row in cursor:
                 else:
                     if hoehenstufe_heute=="obersubalpin":
                         if hoehenstufe_zukunft == "subalpin":
-                            NAIS_StandortstypZukunft=Projektionspfad_regJM12a2b3_OSA_SA(item, standortsregion, hoehenstufe_heute,hoehenstufe_zukunft, schatten, strahlungsreich, blockschutt, bodenverdichtet,trocken, kuppenlage, hanglage, muldenlage, VS, SH)
+                            NAIS_StandortstypZukunft=Projektionspfad_regJM12a2b3_OSA_SA(item, standortsregion, hoehenstufe_heute,hoehenstufe_zukunft, schatten, strahlungsreich, blockschutt, bodenverdichtet,trocken, kuppenlage, hanglage, muldenlage, VS, SH,hangneigung)
                         elif hoehenstufe_zukunft in ["hochmontan im Tannen-Hauptareal", "hochmontan im Tannen-Nebenareal", "hochmontan im Tannen-Reliktareal"]:
-                            tempNAIS1=Projektionspfad_regJM12a2b3_OSA_SA(item, standortsregion, hoehenstufe_heute, "subalpin", schatten, strahlungsreich, blockschutt, bodenverdichtet, trocken, kuppenlage, hanglage, muldenlage, VS, SH)
+                            tempNAIS1=Projektionspfad_regJM12a2b3_OSA_SA(item, standortsregion, hoehenstufe_heute, "subalpin", schatten, strahlungsreich, blockschutt, bodenverdichtet, trocken, kuppenlage, hanglage, muldenlage, VS, SH,hangneigung)
                             if hoehenstufe_zukunft == "hochmontan im Tannen-Hauptareal":
-                                NAIS_StandortstypZukunft = Projektionspfad_regJM12a2b3_SA_HMTannenHaupt(tempNAIS1, standortsregion,"subalpin",hoehenstufe_zukunft, schatten,strahlungsreich, blockschutt,bodenverdichtet,trocken, kuppenlage, hanglage,muldenlage, VS, SH)
+                                NAIS_StandortstypZukunft = Projektionspfad_regJM12a2b3_SA_HMTannenHaupt(tempNAIS1, standortsregion,"subalpin",hoehenstufe_zukunft, schatten,strahlungsreich, blockschutt,bodenverdichtet,trocken, kuppenlage, hanglage,muldenlage, VS, SH,hangneigung)
                             elif hoehenstufe_zukunft == "hochmontan im Tannen-Nebenareal":
-                                NAIS_StandortstypZukunft = Projektionspfad_regJM12a2b3_SA_HMTannenNeben(tempNAIS1, standortsregion,"subalpin",hoehenstufe_zukunft, schatten,strahlungsreich, blockschutt,bodenverdichtet,trocken, kuppenlage, hanglage,muldenlage, VS, SH)
+                                NAIS_StandortstypZukunft = Projektionspfad_regJM12a2b3_SA_HMTannenNeben(tempNAIS1, standortsregion,"subalpin",hoehenstufe_zukunft, schatten,strahlungsreich, blockschutt,bodenverdichtet,trocken, kuppenlage, hanglage,muldenlage, VS, SH,hangneigung)
                             elif hoehenstufe_zukunft == "hochmontan im Tannen-Reliktareal":
-                                NAIS_StandortstypZukunft = Projektionspfad_regJM12a2b3_SA_HMTannenRelikt(tempNAIS1, standortsregion,"subalpin",hoehenstufe_zukunft, schatten,strahlungsreich, blockschutt,bodenverdichtet,trocken, kuppenlage, hanglage,muldenlage, VS, SH)
+                                NAIS_StandortstypZukunft = Projektionspfad_regJM12a2b3_SA_HMTannenRelikt(tempNAIS1, standortsregion,"subalpin",hoehenstufe_zukunft, schatten,strahlungsreich, blockschutt,bodenverdichtet,trocken, kuppenlage, hanglage,muldenlage, VS, SH,hangneigung)
                         elif hoehenstufe_zukunft =="obermontan":
                             #hier koennte man noch die Abfrage nach Art des Tannenareals einbauen, wenn man die Tannenareal-Karte fuer die Zukunft explizit haette
-                            tempNAIS1 = Projektionspfad_regJM12a2b3_OSA_SA(item, standortsregion,hoehenstufe_heute, "subalpin", schatten, strahlungsreich,blockschutt, bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH)
-                            tempNAIS2 = Projektionspfad_regJM12a2b3_SA_HMTannenHaupt(tempNAIS1, standortsregion,"subalpin","hochmontan im Tannen-Hauptareal",schatten, strahlungsreich,blockschutt,bodenverdichtet, trocken,kuppenlage, hanglage,muldenlage, VS, SH)
-                            NAIS_StandortstypZukunft =Projektionspfad_regJM12a2b3_HM_OM(tempNAIS2, standortsregion, "hochmontan",hoehenstufe_zukunft,schatten, strahlungsreich,blockschutt,bodenverdichtet, trocken,kuppenlage, hanglage,muldenlage, VS, SH)
+                            tempNAIS1 = Projektionspfad_regJM12a2b3_OSA_SA(item, standortsregion,hoehenstufe_heute, "subalpin", schatten, strahlungsreich,blockschutt, bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH,hangneigung)
+                            tempNAIS2 = Projektionspfad_regJM12a2b3_SA_HMTannenHaupt(tempNAIS1, standortsregion,"subalpin","hochmontan im Tannen-Hauptareal",schatten, strahlungsreich,blockschutt,bodenverdichtet, trocken,kuppenlage, hanglage,muldenlage, VS, SH,hangneigung)
+                            NAIS_StandortstypZukunft =Projektionspfad_regJM12a2b3_HM_OM(tempNAIS2, standortsregion, "hochmontan",hoehenstufe_zukunft,schatten, strahlungsreich,blockschutt,bodenverdichtet, trocken,kuppenlage, hanglage,muldenlage, VS, SH,hangneigung)
                         elif hoehenstufe_zukunft == "untermontan":
-                            tempNAIS1 = Projektionspfad_regJM12a2b3_OSA_SA(item, standortsregion, hoehenstufe_heute, "subalpin", schatten, strahlungsreich, blockschutt, bodenverdichtet, trocken, kuppenlage, hanglage, muldenlage, VS, SH)
+                            tempNAIS1 = Projektionspfad_regJM12a2b3_OSA_SA(item, standortsregion, hoehenstufe_heute, "subalpin", schatten, strahlungsreich, blockschutt, bodenverdichtet, trocken, kuppenlage, hanglage, muldenlage, VS, SH,hangneigung)
                             if standortsregion in ["2b","3"]:
                                 #hier Fragezeichen Relikt oder Nebenareal
-                                tempNAIS2=Projektionspfad_regJM12a2b3_SA_HMTannenNeben(tempNAIS1, standortsregion, "subalpin","hochmontan im Tannen-Nebenareal", schatten,strahlungsreich, blockschutt, bodenverdichtet,trocken, kuppenlage, hanglage, muldenlage, VS,SH)
+                                tempNAIS2=Projektionspfad_regJM12a2b3_SA_HMTannenNeben(tempNAIS1, standortsregion, "subalpin","hochmontan im Tannen-Nebenareal", schatten,strahlungsreich, blockschutt, bodenverdichtet,trocken, kuppenlage, hanglage, muldenlage, VS,SH,hangneigung)
                             else:
-                                tempNAIS2 = Projektionspfad_regJM12a2b3_SA_HMTannenHaupt(tempNAIS1, standortsregion, "subalpin","hochmontan im Tannen-Hauptareal", schatten,strahlungsreich, blockschutt, bodenverdichtet,trocken, kuppenlage, hanglage, muldenlage, VS,SH)
-                            tempNAIS3 = Projektionspfad_regJM12a2b3_HM_OM(tempNAIS2, standortsregion, "hochmontan","obermontan", schatten,strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH)
-                            NAIS_StandortstypZukunft=Projektionspfad_regJM12a2b3_OM_UM(tempNAIS3, standortsregion, "obermontan",hoehenstufe_zukunft, schatten,strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH)
+                                tempNAIS2 = Projektionspfad_regJM12a2b3_SA_HMTannenHaupt(tempNAIS1, standortsregion, "subalpin","hochmontan im Tannen-Hauptareal", schatten,strahlungsreich, blockschutt, bodenverdichtet,trocken, kuppenlage, hanglage, muldenlage, VS,SH,hangneigung)
+                            tempNAIS3 = Projektionspfad_regJM12a2b3_HM_OM(tempNAIS2, standortsregion, "hochmontan","obermontan", schatten,strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH,hangneigung)
+                            NAIS_StandortstypZukunft=Projektionspfad_regJM12a2b3_OM_UM(tempNAIS3, standortsregion, "obermontan",hoehenstufe_zukunft, schatten,strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH,hangneigung)
                         elif hoehenstufe_zukunft == "submontan":
-                            tempNAIS1 = Projektionspfad_regJM12a2b3_OSA_SA(item, standortsregion,hoehenstufe_heute, "subalpin", schatten,strahlungsreich, blockschutt, bodenverdichtet,trocken, kuppenlage, hanglage, muldenlage, VS, SH)
+                            tempNAIS1 = Projektionspfad_regJM12a2b3_OSA_SA(item, standortsregion,hoehenstufe_heute, "subalpin", schatten,strahlungsreich, blockschutt, bodenverdichtet,trocken, kuppenlage, hanglage, muldenlage, VS, SH,hangneigung)
                             if standortsregion in ["2b", "3"]:
                                 # hier Fragezeichen Relikt oder Nebenareal
-                                tempNAIS2 = Projektionspfad_regJM12a2b3_SA_HMTannenNeben(tempNAIS1, standortsregion, "subalpin","hochmontan im Tannen-Nebenareal",schatten, strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH)
+                                tempNAIS2 = Projektionspfad_regJM12a2b3_SA_HMTannenNeben(tempNAIS1, standortsregion, "subalpin","hochmontan im Tannen-Nebenareal",schatten, strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH,hangneigung)
                             else:
-                                tempNAIS2 = Projektionspfad_regJM12a2b3_SA_HMTannenHaupt(tempNAIS1, standortsregion, "subalpin","hochmontan im Tannen-Hauptareal",schatten, strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH)
-                            tempNAIS3 = Projektionspfad_regJM12a2b3_HM_OM(tempNAIS2, standortsregion, "hochmontan","obermontan", schatten, strahlungsreich,blockschutt, bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH)
-                            tempNAIS4 = Projektionspfad_regJM12a2b3_OM_UM(tempNAIS3, standortsregion,"obermontan", "untermontan",schatten, strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH)
-                            NAIS_StandortstypZukunft =Projektionspfad_regJM12a2b3_UM_SM(tempNAIS4, standortsregion,"untermontan", hoehenstufe_zukunft,schatten, strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH)
+                                tempNAIS2 = Projektionspfad_regJM12a2b3_SA_HMTannenHaupt(tempNAIS1, standortsregion, "subalpin","hochmontan im Tannen-Hauptareal",schatten, strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH,hangneigung)
+                            tempNAIS3 = Projektionspfad_regJM12a2b3_HM_OM(tempNAIS2, standortsregion, "hochmontan","obermontan", schatten, strahlungsreich,blockschutt, bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH,hangneigung)
+                            tempNAIS4 = Projektionspfad_regJM12a2b3_OM_UM(tempNAIS3, standortsregion,"obermontan", "untermontan",schatten, strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH,hangneigung)
+                            NAIS_StandortstypZukunft =Projektionspfad_regJM12a2b3_UM_SM(tempNAIS4, standortsregion,"untermontan", hoehenstufe_zukunft,schatten, strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH,hangneigung)
                         elif hoehenstufe_zukunft == "collin":
-                            tempNAIS1 = Projektionspfad_regJM12a2b3_OSA_SA(item, standortsregion,hoehenstufe_heute, "subalpin", schatten, strahlungsreich,blockschutt, bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH)
+                            tempNAIS1 = Projektionspfad_regJM12a2b3_OSA_SA(item, standortsregion,hoehenstufe_heute, "subalpin", schatten, strahlungsreich,blockschutt, bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH,hangneigung)
                             if standortsregion in ["2b", "3"]:
                                 # hier Fragezeichen Relikt oder Nebenareal
-                                tempNAIS2 = Projektionspfad_regJM12a2b3_SA_HMTannenNeben(tempNAIS1, standortsregion, "subalpin","hochmontan im Tannen-Nebenareal",schatten, strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH)
+                                tempNAIS2 = Projektionspfad_regJM12a2b3_SA_HMTannenNeben(tempNAIS1, standortsregion, "subalpin","hochmontan im Tannen-Nebenareal",schatten, strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH,hangneigung)
                             else:
-                                tempNAIS2 = Projektionspfad_regJM12a2b3_SA_HMTannenHaupt(tempNAIS1, standortsregion, "subalpin","hochmontan im Tannen-Hauptareal",schatten, strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH)
-                            tempNAIS3 = Projektionspfad_regJM12a2b3_HM_OM(tempNAIS2, standortsregion, "hochmontan","obermontan", schatten, strahlungsreich,blockschutt, bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH)
-                            tempNAIS4 = Projektionspfad_regJM12a2b3_OM_UM(tempNAIS3, standortsregion, "obermontan","untermontan", schatten, strahlungsreich,blockschutt, bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH)
-                            tempNAIS5 = Projektionspfad_regJM12a2b3_UM_SM(tempNAIS4, standortsregion, "untermontan","submontan", schatten,strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH)
+                                tempNAIS2 = Projektionspfad_regJM12a2b3_SA_HMTannenHaupt(tempNAIS1, standortsregion, "subalpin","hochmontan im Tannen-Hauptareal",schatten, strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH,hangneigung)
+                            tempNAIS3 = Projektionspfad_regJM12a2b3_HM_OM(tempNAIS2, standortsregion, "hochmontan","obermontan", schatten, strahlungsreich,blockschutt, bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH,hangneigung)
+                            tempNAIS4 = Projektionspfad_regJM12a2b3_OM_UM(tempNAIS3, standortsregion, "obermontan","untermontan", schatten, strahlungsreich,blockschutt, bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH,hangneigung)
+                            tempNAIS5 = Projektionspfad_regJM12a2b3_UM_SM(tempNAIS4, standortsregion, "untermontan","submontan", schatten,strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH,hangneigung)
                             if standortsregion in ["J","M","1","2a"]:
-                                NAIS_StandortstypZukunft =Projektionspfad_regJM12a2b3_SM_CO(tempNAIS5, standortsregion, "submontan",hoehenstufe_zukunft, schatten,strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH)
+                                NAIS_StandortstypZukunft =Projektionspfad_regJM12a2b3_SM_CO(tempNAIS5, standortsregion, "submontan",hoehenstufe_zukunft, schatten,strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH,hangneigung)
                             elif standortsregion in ["2b","3"]:
-                                #print "Monika fragen"
                                 NAIS_StandortstypZukunft =Projektionspfad_regJM12a2b3_SM_CO(tempNAIS5, standortsregion, "submontan", hoehenstufe_zukunft,
                                                                   schatten, strahlungsreich, blockschutt, bodenverdichtet,
-                                                                  trocken, kuppenlage, hanglage, muldenlage, VS, SH)
+                                                                  trocken, kuppenlage, hanglage, muldenlage, VS, SH,hangneigung)
                     elif hoehenstufe_heute=="subalpin":
                         if hoehenstufe_zukunft in ["hochmontan im Tannen-Hauptareal", "hochmontan im Tannen-Nebenareal", "hochmontan im Tannen-Reliktareal"]:
                             if hoehenstufe_zukunft == "hochmontan im Tannen-Hauptareal":
-                                NAIS_StandortstypZukunft = Projektionspfad_regJM12a2b3_SA_HMTannenHaupt(item, standortsregion,"subalpin",hoehenstufe_zukunft, schatten,strahlungsreich, blockschutt,bodenverdichtet,trocken, kuppenlage, hanglage,muldenlage, VS, SH)
+                                NAIS_StandortstypZukunft = Projektionspfad_regJM12a2b3_SA_HMTannenHaupt(item, standortsregion,"subalpin",hoehenstufe_zukunft, schatten,strahlungsreich, blockschutt,bodenverdichtet,trocken, kuppenlage, hanglage,muldenlage, VS, SH,hangneigung)
                             elif hoehenstufe_zukunft == "hochmontan im Tannen-Nebenareal":
-                                NAIS_StandortstypZukunft = Projektionspfad_regJM12a2b3_SA_HMTannenNeben(item, standortsregion,"subalpin",hoehenstufe_zukunft, schatten,strahlungsreich, blockschutt,bodenverdichtet,trocken, kuppenlage, hanglage,muldenlage, VS, SH)
+                                NAIS_StandortstypZukunft = Projektionspfad_regJM12a2b3_SA_HMTannenNeben(item, standortsregion,"subalpin",hoehenstufe_zukunft, schatten,strahlungsreich, blockschutt,bodenverdichtet,trocken, kuppenlage, hanglage,muldenlage, VS, SH,hangneigung)
                             elif hoehenstufe_zukunft == "hochmontan im Tannen-Reliktareal":
-                                NAIS_StandortstypZukunft = Projektionspfad_regJM12a2b3_SA_HMTannenRelikt(item, standortsregion,"subalpin",hoehenstufe_zukunft, schatten,strahlungsreich, blockschutt,bodenverdichtet,trocken, kuppenlage, hanglage,muldenlage, VS, SH)
+                                NAIS_StandortstypZukunft = Projektionspfad_regJM12a2b3_SA_HMTannenRelikt(item, standortsregion,"subalpin",hoehenstufe_zukunft, schatten,strahlungsreich, blockschutt,bodenverdichtet,trocken, kuppenlage, hanglage,muldenlage, VS, SH,hangneigung)
                         elif hoehenstufe_zukunft =="obermontan":
                             #hier koennte man noch zwischen Haupt- Neben und Reliktareal unterscheiden
-                            tempNAIS1 = Projektionspfad_regJM12a2b3_SA_HMTannenHaupt(item, standortsregion,hoehenstufe_heute,"hochmontan im Tannen-Hauptareal",schatten, strahlungsreich,blockschutt,bodenverdichtet, trocken,kuppenlage, hanglage,muldenlage, VS, SH)
-                            NAIS_StandortstypZukunft =Projektionspfad_regJM12a2b3_HM_OM(tempNAIS1, standortsregion, "hochmontan",hoehenstufe_zukunft,schatten, strahlungsreich,blockschutt,bodenverdichtet, trocken,kuppenlage, hanglage,muldenlage, VS, SH)
+                            tempNAIS1 = Projektionspfad_regJM12a2b3_SA_HMTannenHaupt(item, standortsregion,hoehenstufe_heute,"hochmontan im Tannen-Hauptareal",schatten, strahlungsreich,blockschutt,bodenverdichtet, trocken,kuppenlage, hanglage,muldenlage, VS, SH,hangneigung)
+                            NAIS_StandortstypZukunft =Projektionspfad_regJM12a2b3_HM_OM(tempNAIS1, standortsregion, "hochmontan",hoehenstufe_zukunft,schatten, strahlungsreich,blockschutt,bodenverdichtet, trocken,kuppenlage, hanglage,muldenlage, VS, SH,hangneigung)
                         elif hoehenstufe_zukunft == "untermontan":
                             if standortsregion in ["2b","3"]:
-                                tempNAIS1=Projektionspfad_regJM12a2b3_SA_HMTannenNeben(item, standortsregion, "subalpin","hochmontan im Tannen-Nebenareal", schatten,strahlungsreich, blockschutt, bodenverdichtet,trocken, kuppenlage, hanglage, muldenlage, VS,SH)
+                                tempNAIS1=Projektionspfad_regJM12a2b3_SA_HMTannenNeben(item, standortsregion, "subalpin","hochmontan im Tannen-Nebenareal", schatten,strahlungsreich, blockschutt, bodenverdichtet,trocken, kuppenlage, hanglage, muldenlage, VS,SH,hangneigung)
                             else:
-                                tempNAIS1 = Projektionspfad_regJM12a2b3_SA_HMTannenHaupt(item, standortsregion, "subalpin","hochmontan im Tannen-Hauptareal", schatten,strahlungsreich, blockschutt, bodenverdichtet,trocken, kuppenlage, hanglage, muldenlage, VS,SH)
-                            tempNAIS2 = Projektionspfad_regJM12a2b3_HM_OM(tempNAIS1, standortsregion, "hochmontan","obermontan", schatten,strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH)
-                            NAIS_StandortstypZukunft=Projektionspfad_regJM12a2b3_OM_UM(tempNAIS2, standortsregion, "obermontan",hoehenstufe_zukunft, schatten,strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH)
+                                tempNAIS1 = Projektionspfad_regJM12a2b3_SA_HMTannenHaupt(item, standortsregion, "subalpin","hochmontan im Tannen-Hauptareal", schatten,strahlungsreich, blockschutt, bodenverdichtet,trocken, kuppenlage, hanglage, muldenlage, VS,SH,hangneigung)
+                            tempNAIS2 = Projektionspfad_regJM12a2b3_HM_OM(tempNAIS1, standortsregion, "hochmontan","obermontan", schatten,strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH,hangneigung)
+                            NAIS_StandortstypZukunft=Projektionspfad_regJM12a2b3_OM_UM(tempNAIS2, standortsregion, "obermontan",hoehenstufe_zukunft, schatten,strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH,hangneigung)
                         elif hoehenstufe_zukunft == "submontan":
                             if standortsregion in ["2b", "3"]:
-                                tempNAIS1 = Projektionspfad_regJM12a2b3_SA_HMTannenNeben(item, standortsregion, "subalpin","hochmontan im Tannen-Nebenareal",schatten, strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH)
+                                tempNAIS1 = Projektionspfad_regJM12a2b3_SA_HMTannenNeben(item, standortsregion, "subalpin","hochmontan im Tannen-Nebenareal",schatten, strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH,hangneigung)
                             else:
-                                tempNAIS1 = Projektionspfad_regJM12a2b3_SA_HMTannenHaupt(item, standortsregion, "subalpin","hochmontan im Tannen-Hauptareal",schatten, strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH)
-                            tempNAIS2 = Projektionspfad_regJM12a2b3_HM_OM(tempNAIS1, standortsregion, "hochmontan","obermontan", schatten, strahlungsreich,blockschutt, bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH)
-                            tempNAIS3 = Projektionspfad_regJM12a2b3_OM_UM(tempNAIS2, standortsregion,"obermontan", "untermontan",schatten, strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH)
-                            NAIS_StandortstypZukunft=Projektionspfad_regJM12a2b3_UM_SM(tempNAIS3, standortsregion,"untermontan", hoehenstufe_zukunft,schatten, strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH)
+                                tempNAIS1 = Projektionspfad_regJM12a2b3_SA_HMTannenHaupt(item, standortsregion, "subalpin","hochmontan im Tannen-Hauptareal",schatten, strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH,hangneigung)
+                            tempNAIS2 = Projektionspfad_regJM12a2b3_HM_OM(tempNAIS1, standortsregion, "hochmontan","obermontan", schatten, strahlungsreich,blockschutt, bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH,hangneigung)
+                            tempNAIS3 = Projektionspfad_regJM12a2b3_OM_UM(tempNAIS2, standortsregion,"obermontan", "untermontan",schatten, strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH,hangneigung)
+                            NAIS_StandortstypZukunft=Projektionspfad_regJM12a2b3_UM_SM(tempNAIS3, standortsregion,"untermontan", hoehenstufe_zukunft,schatten, strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH,hangneigung)
                         elif hoehenstufe_zukunft == "collin":
                             if standortsregion in ["2b", "3"]:
-                                tempNAIS1 = Projektionspfad_regJM12a2b3_SA_HMTannenNeben(item, standortsregion, "subalpin","hochmontan im Tannen-Nebenareal",schatten, strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH)
+                                tempNAIS1 = Projektionspfad_regJM12a2b3_SA_HMTannenNeben(item, standortsregion, "subalpin","hochmontan im Tannen-Nebenareal",schatten, strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH,hangneigung)
                             else:
-                                tempNAIS2 = Projektionspfad_regJM12a2b3_SA_HMTannenHaupt(tempNAIS1, standortsregion, "subalpin","hochmontan im Tannen-Hauptareal",schatten, strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH)
-                            tempNAIS3 = Projektionspfad_regJM12a2b3_HM_OM(tempNAIS2, standortsregion, "hochmontan","obermontan", schatten, strahlungsreich,blockschutt, bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH)
-                            tempNAIS4 = Projektionspfad_regJM12a2b3_OM_UM(tempNAIS3, standortsregion, "obermontan","untermontan", schatten, strahlungsreich,blockschutt, bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH)
-                            tempNAIS5 = Projektionspfad_regJM12a2b3_UM_SM(tempNAIS4, standortsregion, "untermontan","submontan", schatten,strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH)
+                                tempNAIS2 = Projektionspfad_regJM12a2b3_SA_HMTannenHaupt(tempNAIS1, standortsregion, "subalpin","hochmontan im Tannen-Hauptareal",schatten, strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH,hangneigung)
+                            tempNAIS3 = Projektionspfad_regJM12a2b3_HM_OM(tempNAIS2, standortsregion, "hochmontan","obermontan", schatten, strahlungsreich,blockschutt, bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH,hangneigung)
+                            tempNAIS4 = Projektionspfad_regJM12a2b3_OM_UM(tempNAIS3, standortsregion, "obermontan","untermontan", schatten, strahlungsreich,blockschutt, bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH,hangneigung)
+                            tempNAIS5 = Projektionspfad_regJM12a2b3_UM_SM(tempNAIS4, standortsregion, "untermontan","submontan", schatten,strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH,hangneigung)
                             if standortsregion in ["J","M","1","2a"]:
-                                NAIS_StandortstypZukunft =Projektionspfad_regJM12a2b3_SM_CO(tempNAIS5, standortsregion, "submontan",hoehenstufe_zukunft, schatten,strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH)
+                                NAIS_StandortstypZukunft =Projektionspfad_regJM12a2b3_SM_CO(tempNAIS5, standortsregion, "submontan",hoehenstufe_zukunft, schatten,strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH,hangneigung)
                             elif standortsregion in ["2b","3"]:
-                                #print "Monika fragen"
                                 NAIS_StandortstypZukunft = Projektionspfad_regJM12a2b3_SM_CO(tempNAIS5, standortsregion,
                                                                                              "submontan",
                                                                                              hoehenstufe_zukunft, schatten,
                                                                                              strahlungsreich, blockschutt,
                                                                                              bodenverdichtet, trocken,
                                                                                              kuppenlage, hanglage,
-                                                                                             muldenlage, VS, SH)
+                                                                                             muldenlage, VS, SH,hangneigung)
                     elif "hochmontan" in hoehenstufe_heute:
                         if hoehenstufe_zukunft == "obermontan":
-                            NAIS_StandortstypZukunft = Projektionspfad_regJM12a2b3_HM_OM(item, standortsregion,"hochmontan", hoehenstufe_zukunft,schatten, strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH)
+                            NAIS_StandortstypZukunft = Projektionspfad_regJM12a2b3_HM_OM(item, standortsregion,"hochmontan", hoehenstufe_zukunft,schatten, strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH,hangneigung)
                         elif hoehenstufe_zukunft == "untermontan":
-                            tempNAIS1 = Projektionspfad_regJM12a2b3_HM_OM(item, standortsregion, "hochmontan", "obermontan", schatten, strahlungsreich, blockschutt, bodenverdichtet, trocken, kuppenlage, hanglage, muldenlage, VS, SH)
-                            NAIS_StandortstypZukunft = Projektionspfad_regJM12a2b3_OM_UM(tempNAIS1, standortsregion,"obermontan", hoehenstufe_zukunft,schatten, strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH)
+                            tempNAIS1 = Projektionspfad_regJM12a2b3_HM_OM(item, standortsregion, "hochmontan", "obermontan", schatten, strahlungsreich, blockschutt, bodenverdichtet, trocken, kuppenlage, hanglage, muldenlage, VS, SH,hangneigung)
+                            NAIS_StandortstypZukunft = Projektionspfad_regJM12a2b3_OM_UM(tempNAIS1, standortsregion,"obermontan", hoehenstufe_zukunft,schatten, strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH,hangneigung)
                         elif hoehenstufe_zukunft == "submontan":
-                            tempNAIS1 = Projektionspfad_regJM12a2b3_HM_OM(item, standortsregion, "hochmontan","obermontan", schatten, strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage, hanglage,muldenlage, VS, SH)
-                            tempNAIS2 = Projektionspfad_regJM12a2b3_OM_UM(tempNAIS1, standortsregion, "obermontan","untermontan", schatten, strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage, hanglage,muldenlage, VS, SH)
-                            NAIS_StandortstypZukunft = Projektionspfad_regJM12a2b3_UM_SM(tempNAIS2, standortsregion,"untermontan", hoehenstufe_zukunft,schatten, strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH)
+                            tempNAIS1 = Projektionspfad_regJM12a2b3_HM_OM(item, standortsregion, "hochmontan","obermontan", schatten, strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage, hanglage,muldenlage, VS, SH,hangneigung)
+                            tempNAIS2 = Projektionspfad_regJM12a2b3_OM_UM(tempNAIS1, standortsregion, "obermontan","untermontan", schatten, strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage, hanglage,muldenlage, VS, SH,hangneigung)
+                            NAIS_StandortstypZukunft = Projektionspfad_regJM12a2b3_UM_SM(tempNAIS2, standortsregion,"untermontan", hoehenstufe_zukunft,schatten, strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH,hangneigung)
                         elif hoehenstufe_zukunft == "collin":
-                            tempNAIS1 = Projektionspfad_regJM12a2b3_HM_OM(item, standortsregion, "hochmontan","obermontan", schatten, strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage, hanglage,muldenlage, VS, SH)
-                            tempNAIS2 = Projektionspfad_regJM12a2b3_OM_UM(tempNAIS1, standortsregion, "obermontan","untermontan", schatten, strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage, hanglage,muldenlage, VS, SH)
-                            tempNAIS3 = Projektionspfad_regJM12a2b3_UM_SM(tempNAIS2, standortsregion, "untermontan", "submontan", schatten, strahlungsreich, blockschutt, bodenverdichtet, trocken, kuppenlage, hanglage, muldenlage, VS, SH)
+                            tempNAIS1 = Projektionspfad_regJM12a2b3_HM_OM(item, standortsregion, "hochmontan","obermontan", schatten, strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage, hanglage,muldenlage, VS, SH,hangneigung)
+                            tempNAIS2 = Projektionspfad_regJM12a2b3_OM_UM(tempNAIS1, standortsregion, "obermontan","untermontan", schatten, strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage, hanglage,muldenlage, VS, SH,hangneigung)
+                            tempNAIS3 = Projektionspfad_regJM12a2b3_UM_SM(tempNAIS2, standortsregion, "untermontan", "submontan", schatten, strahlungsreich, blockschutt, bodenverdichtet, trocken, kuppenlage, hanglage, muldenlage, VS, SH,hangneigung)
                             if standortsregion in ["J", "M", "1", "2a"]:
-                                NAIS_StandortstypZukunft=Projektionspfad_regJM12a2b3_SM_CO(tempNAIS3, standortsregion, "submontan", hoehenstufe_zukunft,schatten, strahlungsreich, blockschutt, bodenverdichtet,trocken, kuppenlage, hanglage, muldenlage, VS, SH)
+                                NAIS_StandortstypZukunft=Projektionspfad_regJM12a2b3_SM_CO(tempNAIS3, standortsregion, "submontan", hoehenstufe_zukunft,schatten, strahlungsreich, blockschutt, bodenverdichtet,trocken, kuppenlage, hanglage, muldenlage, VS, SH,hangneigung)
                             elif standortsregion in ["2b", "3"]:
-                                #print "Monika fragen"
                                 NAIS_StandortstypZukunft=Projektionspfad_regJM12a2b3_SM_CO(tempNAIS3, standortsregion, "submontan", hoehenstufe_zukunft,
                                                                   schatten, strahlungsreich, blockschutt, bodenverdichtet,
-                                                                  trocken, kuppenlage, hanglage, muldenlage, VS, SH)
+                                                                  trocken, kuppenlage, hanglage, muldenlage, VS, SH,hangneigung)
                     elif "ober" in hoehenstufe_heute:
                         if hoehenstufe_zukunft == "untermontan":
-                            NAIS_StandortstypZukunft = Projektionspfad_regJM12a2b3_OM_UM(item, standortsregion,"obermontan", hoehenstufe_zukunft,schatten, strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH)
+                            NAIS_StandortstypZukunft = Projektionspfad_regJM12a2b3_OM_UM(item, standortsregion,"obermontan", hoehenstufe_zukunft,schatten, strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH,hangneigung)
                         elif hoehenstufe_zukunft == "submontan":
-                            tempNAIS1 = Projektionspfad_regJM12a2b3_OM_UM(item, standortsregion, "obermontan","untermontan", schatten, strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage, hanglage,muldenlage, VS, SH)
-                            NAIS_StandortstypZukunft = Projektionspfad_regJM12a2b3_UM_SM(tempNAIS1, standortsregion,"untermontan", hoehenstufe_zukunft,schatten, strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH)
+                            tempNAIS1 = Projektionspfad_regJM12a2b3_OM_UM(item, standortsregion, "obermontan","untermontan", schatten, strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage, hanglage,muldenlage, VS, SH,hangneigung)
+                            NAIS_StandortstypZukunft = Projektionspfad_regJM12a2b3_UM_SM(tempNAIS1, standortsregion,"untermontan", hoehenstufe_zukunft,schatten, strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH,hangneigung)
                         elif hoehenstufe_zukunft == "collin":
-                            tempNAIS1 = Projektionspfad_regJM12a2b3_OM_UM(item, standortsregion, "obermontan","untermontan", schatten, strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage, hanglage,muldenlage, VS, SH)
-                            tempNAIS2 = Projektionspfad_regJM12a2b3_UM_SM(tempNAIS1, standortsregion, "untermontan", "submontan", schatten, strahlungsreich, blockschutt, bodenverdichtet, trocken, kuppenlage, hanglage, muldenlage, VS, SH)
+                            tempNAIS1 = Projektionspfad_regJM12a2b3_OM_UM(item, standortsregion, "obermontan","untermontan", schatten, strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage, hanglage,muldenlage, VS, SH,hangneigung)
+                            tempNAIS2 = Projektionspfad_regJM12a2b3_UM_SM(tempNAIS1, standortsregion, "untermontan", "submontan", schatten, strahlungsreich, blockschutt, bodenverdichtet, trocken, kuppenlage, hanglage, muldenlage, VS, SH,hangneigung)
                             if standortsregion in ["J", "M", "1", "2a"]:
-                                NAIS_StandortstypZukunft=Projektionspfad_regJM12a2b3_SM_CO(tempNAIS2, standortsregion, "submontan", hoehenstufe_zukunft,schatten, strahlungsreich, blockschutt, bodenverdichtet,trocken, kuppenlage, hanglage, muldenlage, VS, SH)
+                                NAIS_StandortstypZukunft=Projektionspfad_regJM12a2b3_SM_CO(tempNAIS2, standortsregion, "submontan", hoehenstufe_zukunft,schatten, strahlungsreich, blockschutt, bodenverdichtet,trocken, kuppenlage, hanglage, muldenlage, VS, SH,hangneigung)
                             elif standortsregion in ["2b", "3"]:
-                                #print "Monika fragen"
                                 NAIS_StandortstypZukunft=Projektionspfad_regJM12a2b3_SM_CO(tempNAIS2, standortsregion, "submontan", hoehenstufe_zukunft,
                                                                   schatten, strahlungsreich, blockschutt, bodenverdichtet,
-                                                                  trocken, kuppenlage, hanglage, muldenlage, VS, SH)
+                                                                  trocken, kuppenlage, hanglage, muldenlage, VS, SH,hangneigung)
                     elif hoehenstufe_heute == "untermontan":
                         if hoehenstufe_zukunft == "submontan":
-                            NAIS_StandortstypZukunft = Projektionspfad_regJM12a2b3_UM_SM(item, standortsregion,"untermontan", hoehenstufe_zukunft,schatten, strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH)
+                            NAIS_StandortstypZukunft = Projektionspfad_regJM12a2b3_UM_SM(item, standortsregion,"untermontan", hoehenstufe_zukunft,schatten, strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH,hangneigung)
                         elif hoehenstufe_zukunft == "collin":
-                            tempNAIS1 = Projektionspfad_regJM12a2b3_UM_SM(item, standortsregion, "untermontan","submontan", schatten, strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage, hanglage,muldenlage, VS, SH)
+                            tempNAIS1 = Projektionspfad_regJM12a2b3_UM_SM(item, standortsregion, "untermontan","submontan", schatten, strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage, hanglage,muldenlage, VS, SH,hangneigung)
                             if standortsregion in ["J", "M", "1", "2a"]:
-                                NAIS_StandortstypZukunft=Projektionspfad_regJM12a2b3_SM_CO(tempNAIS1, standortsregion, "submontan", hoehenstufe_zukunft, schatten, strahlungsreich, blockschutt, bodenverdichtet, trocken, kuppenlage, hanglage, muldenlage, VS, SH)
+                                NAIS_StandortstypZukunft=Projektionspfad_regJM12a2b3_SM_CO(tempNAIS1, standortsregion, "submontan", hoehenstufe_zukunft, schatten, strahlungsreich, blockschutt, bodenverdichtet, trocken, kuppenlage, hanglage, muldenlage, VS, SH,hangneigung)
                             elif standortsregion in ["2b", "3"]:
-                                #print "Monika fragen"
-                                NAIS_StandortstypZukunft = Projektionspfad_regJM12a2b3_SM_CO(tempNAIS1, standortsregion, "submontan", hoehenstufe_zukunft, schatten, strahlungsreich, blockschutt, bodenverdichtet, trocken, kuppenlage, hanglage, muldenlage, VS, SH)
+                                NAIS_StandortstypZukunft = Projektionspfad_regJM12a2b3_SM_CO(tempNAIS1, standortsregion, "submontan", hoehenstufe_zukunft, schatten, strahlungsreich, blockschutt, bodenverdichtet, trocken, kuppenlage, hanglage, muldenlage, VS, SH,hangneigung)
                     elif hoehenstufe_heute == "submontan":
                         if hoehenstufe_zukunft == "collin":
-                            NAIS_StandortstypZukunft = Projektionspfad_regJM12a2b3_SM_CO(item, standortsregion, "submontan", hoehenstufe_zukunft,schatten, strahlungsreich, blockschutt, bodenverdichtet,trocken, kuppenlage, hanglage, muldenlage, VS, SH)
+                            NAIS_StandortstypZukunft = Projektionspfad_regJM12a2b3_SM_CO(item, standortsregion, "submontan", hoehenstufe_zukunft,schatten, strahlungsreich, blockschutt, bodenverdichtet,trocken, kuppenlage, hanglage, muldenlage, VS, SH,hangneigung)
                     elif hoehenstufe_heute == "collin":
                         NAIS_StandortstypZukunft = Projektionspfad_regJM12a2b3_CO_CO(NAIS_StandortstypHeute, standortsregion, hoehenstufe_heute,
                                                           hoehenstufe_zukunft, schatten, strahlungsreich, blockschutt,
                                                           bodenverdichtet, trocken, kuppenlage, hanglage, muldenlage, VS,
-                                                          SH)
+                                                          SH,hangneigung)
             elif standortsregion == "4":
                 if hoehenstufe_heute==hoehenstufe_zukunft:
                     NAIS_StandortstypZukunft = item
                 else:
                     if hoehenstufe_heute=="obersubalpin":
                         if hoehenstufe_zukunft == "subalpin":
-                            NAIS_StandortstypZukunft=Projektionspfad_reg4_OSA_SA(item, standortsregion, hoehenstufe_heute,hoehenstufe_zukunft, schatten, strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage, hanglage, muldenlage, VS, SH)
+                            NAIS_StandortstypZukunft=Projektionspfad_reg4_OSA_SA(item, standortsregion, hoehenstufe_heute,hoehenstufe_zukunft, schatten, strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage, hanglage, muldenlage, VS, SH,hangneigung)
                         elif hoehenstufe_zukunft in ["hochmontan im Tannen-Hauptareal", "hochmontan im Tannen-Nebenareal", "hochmontan im Tannen-Reliktareal"]:
-                            tempNAIS1=Projektionspfad_reg4_OSA_SA(item, standortsregion, hoehenstufe_heute, "subalpin", schatten, strahlungsreich, blockschutt, bodenverdichtet, trocken, kuppenlage, hanglage, muldenlage, VS, SH)
+                            tempNAIS1=Projektionspfad_reg4_OSA_SA(item, standortsregion, hoehenstufe_heute, "subalpin", schatten, strahlungsreich, blockschutt, bodenverdichtet, trocken, kuppenlage, hanglage, muldenlage, VS, SH,hangneigung)
                             if hoehenstufe_zukunft == "hochmontan im Tannen-Hauptareal":
-                                NAIS_StandortstypZukunft = Projektionspfad_reg4_SA_HMTannenHaupt(tempNAIS1, standortsregion,"subalpin",hoehenstufe_zukunft, schatten,strahlungsreich, blockschutt,bodenverdichtet,trocken, kuppenlage, hanglage,muldenlage, VS, SH)
+                                NAIS_StandortstypZukunft = Projektionspfad_reg4_SA_HMTannenHaupt(tempNAIS1, standortsregion,"subalpin",hoehenstufe_zukunft, schatten,strahlungsreich, blockschutt,bodenverdichtet,trocken, kuppenlage, hanglage,muldenlage, VS, SH,hangneigung)
                             elif hoehenstufe_zukunft == "hochmontan im Tannen-Nebenareal":
-                                NAIS_StandortstypZukunft = Projektionspfad_reg4_SA_HMTannenNeben(tempNAIS1, standortsregion,"subalpin",hoehenstufe_zukunft, schatten,strahlungsreich, blockschutt,bodenverdichtet,trocken, kuppenlage, hanglage,muldenlage, VS, SH)
+                                NAIS_StandortstypZukunft = Projektionspfad_reg4_SA_HMTannenNeben(tempNAIS1, standortsregion,"subalpin",hoehenstufe_zukunft, schatten,strahlungsreich, blockschutt,bodenverdichtet,trocken, kuppenlage, hanglage,muldenlage, VS, SH,hangneigung)
                             elif hoehenstufe_zukunft == "hochmontan im Tannen-Reliktareal":
-                                NAIS_StandortstypZukunft = Projektionspfad_reg4_SA_HMTannenRelikt(tempNAIS1, standortsregion,"subalpin",hoehenstufe_zukunft, schatten,strahlungsreich, blockschutt,bodenverdichtet,trocken, kuppenlage, hanglage,muldenlage, VS, SH)
+                                NAIS_StandortstypZukunft = Projektionspfad_reg4_SA_HMTannenRelikt(tempNAIS1, standortsregion,"subalpin",hoehenstufe_zukunft, schatten,strahlungsreich, blockschutt,bodenverdichtet,trocken, kuppenlage, hanglage,muldenlage, VS, SH,hangneigung)
                             elif hoehenstufe_zukunft == "collin":
-                                tempNAIS1 = Projektionspfad_reg4_OSA_SA(item, standortsregion,hoehenstufe_heute, "subalpin", schatten, strahlungsreich,blockschutt, bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH)
-                                tempNAIS2 = Projektionspfad_reg4_SA_HMTannenNeben(tempNAIS1, standortsregion, "subalpin","hochmontan im Tannen-Nebenareal",schatten, strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH)
-                                NAIS_StandortstypZukunft = Projektionspfad_reg4_HM_CO(tempNAIS2, standortsregion, "hochmontan","collin", schatten, strahlungsreich,blockschutt, bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH)
+                                tempNAIS1 = Projektionspfad_reg4_OSA_SA(item, standortsregion,hoehenstufe_heute, "subalpin", schatten, strahlungsreich,blockschutt, bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH,hangneigung)
+                                tempNAIS2 = Projektionspfad_reg4_SA_HMTannenNeben(tempNAIS1, standortsregion, "subalpin","hochmontan im Tannen-Nebenareal",schatten, strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH,hangneigung)
+                                NAIS_StandortstypZukunft = Projektionspfad_reg4_HM_CO(tempNAIS2, standortsregion, "hochmontan","collin", schatten, strahlungsreich,blockschutt, bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH,hangneigung)
                     elif hoehenstufe_heute=="subalpin":
                         if hoehenstufe_zukunft in ["hochmontan im Tannen-Hauptareal", "hochmontan im Tannen-Nebenareal","hochmontan im Tannen-Reliktareal"]:
                             if hoehenstufe_zukunft == "hochmontan im Tannen-Hauptareal":
-                                NAIS_StandortstypZukunft = Projektionspfad_reg4_SA_HMTannenHaupt(item, standortsregion,"subalpin",hoehenstufe_zukunft,schatten, strahlungsreich,blockschutt,bodenverdichtet, trocken,kuppenlage, hanglage,muldenlage, VS, SH)
+                                NAIS_StandortstypZukunft = Projektionspfad_reg4_SA_HMTannenHaupt(item, standortsregion,"subalpin",hoehenstufe_zukunft,schatten, strahlungsreich,blockschutt,bodenverdichtet, trocken,kuppenlage, hanglage,muldenlage, VS, SH,hangneigung)
                             elif hoehenstufe_zukunft == "hochmontan im Tannen-Nebenareal":
-                                NAIS_StandortstypZukunft = Projektionspfad_reg4_SA_HMTannenNeben(item, standortsregion,"subalpin",hoehenstufe_zukunft,schatten, strahlungsreich,blockschutt,bodenverdichtet, trocken,kuppenlage, hanglage,muldenlage, VS, SH)
+                                NAIS_StandortstypZukunft = Projektionspfad_reg4_SA_HMTannenNeben(item, standortsregion,"subalpin",hoehenstufe_zukunft,schatten, strahlungsreich,blockschutt,bodenverdichtet, trocken,kuppenlage, hanglage,muldenlage, VS, SH,hangneigung)
                             elif hoehenstufe_zukunft == "hochmontan im Tannen-Reliktareal":
-                                NAIS_StandortstypZukunft = Projektionspfad_reg4_SA_HMTannenRelikt(item,standortsregion,"subalpin",hoehenstufe_zukunft,schatten, strahlungsreich,blockschutt,bodenverdichtet, trocken,kuppenlage, hanglage,muldenlage, VS, SH)
+                                NAIS_StandortstypZukunft = Projektionspfad_reg4_SA_HMTannenRelikt(item,standortsregion,"subalpin",hoehenstufe_zukunft,schatten, strahlungsreich,blockschutt,bodenverdichtet, trocken,kuppenlage, hanglage,muldenlage, VS, SH,hangneigung)
                             elif hoehenstufe_zukunft == "collin":
                                 #hier koennte man noch zwischen Neben- und Reliktareal unterscheiden
-                                tempNAIS1 = Projektionspfad_reg4_SA_HMTannenNeben(item, standortsregion, "subalpin","hochmontan im Tannen-Nebenareal",schatten, strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH)
-                                NAIS_StandortstypZukunft = Projektionspfad_reg4_HM_CO(tempNAIS2, standortsregion,"hochmontan", hoehenstufe_zukunft, schatten,strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH)
+                                tempNAIS1 = Projektionspfad_reg4_SA_HMTannenNeben(item, standortsregion, "subalpin","hochmontan im Tannen-Nebenareal",schatten, strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH,hangneigung)
+                                NAIS_StandortstypZukunft = Projektionspfad_reg4_HM_CO(tempNAIS2, standortsregion,"hochmontan", hoehenstufe_zukunft, schatten,strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH,hangneigung)
                     elif "hochmontan" in hoehenstufe_heute:
                         if hoehenstufe_zukunft == "collin":
-                            NAIS_StandortstypZukunft = Projektionspfad_reg4_HM_CO(tempNAIS2, standortsregion,"hochmontan", hoehenstufe_zukunft, schatten,strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH)
+                            NAIS_StandortstypZukunft = Projektionspfad_reg4_HM_CO(tempNAIS2, standortsregion,"hochmontan", hoehenstufe_zukunft, schatten,strahlungsreich, blockschutt,bodenverdichtet, trocken, kuppenlage,hanglage, muldenlage, VS, SH,hangneigung)
             elif standortsregion in ["5a", "5b", "5"]:
                 if hoehenstufe_heute==hoehenstufe_zukunft:
                     NAIS_StandortstypZukunft = item
                 else:
                     if hoehenstufe_heute in ["subalpin","obersubalpin"]:
                         if hoehenstufe_zukunft in ["hochmontan","hochmontan im Tannen-Hauptareal","hochmontan im Tannen-Nebenareal","hochmontan im Tannen-Reliktareal"]:
-                            NAIS_StandortstypZukunft=Projektionspfad_reg5_OSASA_HM(NAIS_StandortstypHeute, standortsregion, hoehenstufe_heute, "hochmontan", schatten, strahlungsreich, blockschutt, bodenverdichtet, trocken, kuppenlage, hanglage, muldenlage, VS, SH)
+                            NAIS_StandortstypZukunft=Projektionspfad_reg5_OSASA_HM(NAIS_StandortstypHeute, standortsregion, hoehenstufe_heute, "hochmontan", schatten, strahlungsreich, blockschutt, bodenverdichtet, trocken, kuppenlage, hanglage, muldenlage, VS, SH,hangneigung)
                         elif hoehenstufe_zukunft in ["obermontan", "untermontan", "unter- und obermontan"]:
                             tempNAIS1 = Projektionspfad_reg5_OSASA_HM(NAIS_StandortstypHeute,
                                                                                      standortsregion, hoehenstufe_heute,
                                                                                      "hochmontan", schatten,
                                                                                      strahlungsreich, blockschutt,
                                                                                      bodenverdichtet, trocken, kuppenlage,
-                                                                                     hanglage, muldenlage, VS, SH)
-                            NAIS_StandortstypZukunft=Projektionspfad_reg5_HM_OMUM(tempNAIS1, standortsregion, "hochmontan", hoehenstufe_zukunft, schatten, strahlungsreich, blockschutt, bodenverdichtet, trocken, kuppenlage, hanglage, muldenlage, VS, SH)
+                                                                                     hanglage, muldenlage, VS, SH,hangneigung)
+                            NAIS_StandortstypZukunft=Projektionspfad_reg5_HM_OMUM(tempNAIS1, standortsregion, "hochmontan", hoehenstufe_zukunft, schatten, strahlungsreich, blockschutt, bodenverdichtet, trocken, kuppenlage, hanglage, muldenlage, VS, SH,hangneigung)
                         elif "collin" in hoehenstufe_zukunft:
                             tempNAIS1 = Projektionspfad_reg5_OSASA_HM(NAIS_StandortstypHeute,
                                                                       standortsregion, hoehenstufe_heute,
                                                                       "hochmontan", schatten,
                                                                       strahlungsreich, blockschutt,
                                                                       bodenverdichtet, trocken, kuppenlage,
-                                                                      hanglage, muldenlage, VS, SH)
+                                                                      hanglage, muldenlage, VS, SH,hangneigung)
                             tempNAIS2 = Projektionspfad_reg5_HM_OMUM(tempNAIS1, standortsregion,
                                                                                     "hochmontan", "unter- und obermontan", schatten,
                                                                                     strahlungsreich, blockschutt,
                                                                                     bodenverdichtet, trocken, kuppenlage,
-                                                                                    hanglage, muldenlage, VS, SH)
-                            NAIS_StandortstypZukunft=Projektionspfad_reg5_OMUM_CObu(tempNAIS2, standortsregion, "unter- und obermontan", hoehenstufe_zukunft, schatten, strahlungsreich, blockschutt, bodenverdichtet, trocken, kuppenlage, hanglage, muldenlage, VS, SH)
+                                                                                    hanglage, muldenlage, VS, SH,hangneigung)
+                            NAIS_StandortstypZukunft=Projektionspfad_reg5_OMUM_CObu(tempNAIS2, standortsregion, "unter- und obermontan", hoehenstufe_zukunft, schatten, strahlungsreich, blockschutt, bodenverdichtet, trocken, kuppenlage, hanglage, muldenlage, VS, SH,hangneigung)
                     elif "hochmontan" in hoehenstufe_heute:
                         if hoehenstufe_zukunft in ["obermontan", "untermontan", "unter- und obermontan"]:
-                            NAIS_StandortstypZukunft=Projektionspfad_reg5_HM_OMUM(NAIS_StandortstypHeute, standortsregion, "hochmontan", "unter- und obermontan", schatten, strahlungsreich, blockschutt, bodenverdichtet, trocken, kuppenlage, hanglage, muldenlage, VS, SH)
+                            NAIS_StandortstypZukunft=Projektionspfad_reg5_HM_OMUM(NAIS_StandortstypHeute, standortsregion, "hochmontan", "unter- und obermontan", schatten, strahlungsreich, blockschutt, bodenverdichtet, trocken, kuppenlage, hanglage, muldenlage, VS, SH,hangneigung)
                         elif "collin" in hoehenstufe_zukunft:
                             tempNAIS1 = Projektionspfad_reg5_HM_OMUM(NAIS_StandortstypHeute, standortsregion,
                                                                                     "hochmontan", "unter- und obermontan", schatten,
                                                                                     strahlungsreich, blockschutt,
                                                                                     bodenverdichtet, trocken, kuppenlage,
-                                                                                    hanglage, muldenlage, VS, SH)
-                            NAIS_StandortstypZukunft=Projektionspfad_reg5_OMUM_CObu(tempNAIS1, standortsregion, "unter- und obermontan", hoehenstufe_zukunft, schatten, strahlungsreich, blockschutt, bodenverdichtet, trocken, kuppenlage, hanglage, muldenlage, VS, SH)
+                                                                                    hanglage, muldenlage, VS, SH,hangneigung)
+                            NAIS_StandortstypZukunft=Projektionspfad_reg5_OMUM_CObu(tempNAIS1, standortsregion, "unter- und obermontan", hoehenstufe_zukunft, schatten, strahlungsreich, blockschutt, bodenverdichtet, trocken, kuppenlage, hanglage, muldenlage, VS, SH,hangneigung)
                         elif hoehenstufe_zukunft=="hyperinsubrisch":
                             tempNAIS1 = Projektionspfad_reg5_HM_OMUM(NAIS_StandortstypHeute, standortsregion,
                                                                      "hochmontan", "unter- und obermontan", schatten,
                                                                      strahlungsreich, blockschutt,
                                                                      bodenverdichtet, trocken, kuppenlage,
-                                                                     hanglage, muldenlage, VS, SH)
+                                                                     hanglage, muldenlage, VS, SH,hangneigung)
                             tempNAIS2 = Projektionspfad_reg5_OMUM_CObu(tempNAIS1, standortsregion,
                                                                                       "unter- und obermontan",
                                                                                       "collin", schatten,
                                                                                       strahlungsreich, blockschutt,
                                                                                       bodenverdichtet, trocken, kuppenlage,
-                                                                                      hanglage, muldenlage, VS, SH)
-                            NAIS_StandortstypZukunft=Projektionspfad_reg5_COBu_hyp(tempNAIS2, standortsregion, "collin", hoehenstufe_zukunft, schatten, strahlungsreich, blockschutt, bodenverdichtet, trocken, kuppenlage, hanglage, muldenlage, VS, SH)
+                                                                                      hanglage, muldenlage, VS, SH,hangneigung)
+                            NAIS_StandortstypZukunft=Projektionspfad_reg5_COBu_hyp(tempNAIS2, standortsregion, "collin", hoehenstufe_zukunft, schatten, strahlungsreich, blockschutt, bodenverdichtet, trocken, kuppenlage, hanglage, muldenlage, VS, SH,hangneigung)
                     elif hoehenstufe_heute in ["obermontan", "untermontan", "unter- und obermontan"]:
                         if "collin" in hoehenstufe_zukunft:
                             NAIS_StandortstypZukunft = Projektionspfad_reg5_OMUM_CObu(NAIS_StandortstypHeute, standortsregion,
@@ -684,25 +703,25 @@ for row in cursor:
                                                                                       "collin", schatten,
                                                                                       strahlungsreich, blockschutt,
                                                                                       bodenverdichtet, trocken, kuppenlage,
-                                                                                      hanglage, muldenlage, VS, SH)
+                                                                                      hanglage, muldenlage, VS, SH,hangneigung)
                         elif hoehenstufe_zukunft == "hyperinsubrisch":
                             tempNAIS1 = Projektionspfad_reg5_OMUM_CObu(NAIS_StandortstypHeute, standortsregion,
                                                                        "unter- und obermontan",
                                                                        "collin", schatten,
                                                                        strahlungsreich, blockschutt,
                                                                        bodenverdichtet, trocken, kuppenlage,
-                                                                       hanglage, muldenlage, VS, SH)
+                                                                       hanglage, muldenlage, VS, SH,hangneigung)
                             NAIS_StandortstypZukunft = Projektionspfad_reg5_COBu_hyp(tempNAIS1, standortsregion, "collin",
                                                                                      hoehenstufe_zukunft, schatten,
                                                                                      strahlungsreich, blockschutt,
                                                                                      bodenverdichtet, trocken, kuppenlage,
-                                                                                     hanglage, muldenlage, VS, SH)
+                                                                                     hanglage, muldenlage, VS, SH,hangneigung)
                     elif "collin" in hoehenstufe_heute and hoehenstufe_zukunft == "hyperinsubrisch":
                             NAIS_StandortstypZukunft = Projektionspfad_reg5_COBu_hyp(NAIS_StandortstypHeute, standortsregion, "collin",
                                                                                      hoehenstufe_zukunft, schatten,
                                                                                      strahlungsreich, blockschutt,
                                                                                      bodenverdichtet, trocken, kuppenlage,
-                                                                                     hanglage, muldenlage, VS, SH)
+                                                                                     hanglage, muldenlage, VS, SH,hangneigung)
             ListeStandortstypZukunft.append(NAIS_StandortstypZukunft)
         #************************************************************************************
         #Baumartenempfehlung
@@ -713,31 +732,31 @@ for row in cursor:
             # schreibe Ergebnis in die Spalten
             row[14] = ListeStandortstypZukunft[0]
             if len(haupt[0]) > 0:
-                row[15] = str(haupt[0])
+                row[15] = str(haupt[0]).replace("[","").replace("]","")
             else:
                 row[15]="-"
             if len(haupt[1]) > 0:
-                row[16] = str(haupt[1])
+                row[16] = str(haupt[1]).replace("[","").replace("]","")
             else:
                 row[16]="-"
             if len(haupt[2]) > 0:
-                row[17] = str(haupt[2])
+                row[17] = str(haupt[2]).replace("[","").replace("]","")
             else:
                 row[17]="-"
             if len(haupt[3]) > 0:
-                row[18] = str(haupt[3])
+                row[18] = str(haupt[3]).replace("[","").replace("]","")
             else:
                 row[18]="-"
             if len(haupt[4]) > 0:
-                row[19] = str(haupt[4])
+                row[19] = str(haupt[4]).replace("[","").replace("]","")
             else:
                 row[19]="-"
             if len(haupt[5]) > 0:
-                row[20] = str(haupt[5])
+                row[20] = str(haupt[5]).replace("[","").replace("]","")
             else:
                 row[20]="-"
             if len(haupt[6]) > 0:
-                row[21] = str(haupt[6])
+                row[21] = str(haupt[6]).replace("[","").replace("]","")
             else:
                 row[21]="-"
         if len(NAIS_StandortstypHeute) ==2:
@@ -745,31 +764,31 @@ for row in cursor:
             # schreibe Ergebnis in die Spalten
             row[22] = ListeStandortstypZukunft[1]
             if len(neben[0]) > 0:
-                row[23] = str(neben[0])
+                row[23] = str(neben[0]).replace("[","").replace("]","")
             else:
                 row[23]="-"
             if len(neben[1]) > 0:
-                row[24] = str(neben[1])
+                row[24] = str(neben[1]).replace("[","").replace("]","")
             else:
                 row[24]="-"
             if len(neben[2]) > 0:
-                row[25] = str(neben[2])
+                row[25] = str(neben[2]).replace("[","").replace("]","")
             else:
                 row[25]="-"
             if len(neben[3]) > 0:
-                row[26] = str(neben[3])
+                row[26] = str(neben[3]).replace("[","").replace("]","")
             else:
                 row[26]="-"
             if len(neben[4]) > 0:
-                row[27] = str(neben[4])
+                row[27] = str(neben[4]).replace("[","").replace("]","")
             else:
                 row[27]="-"
             if len(neben[5]) > 0:
-                row[28] = str(neben[5])
+                row[28] = str(neben[5]).replace("[","").replace("]","")
             else:
                 row[28]="-"
             if len(neben[6]) > 0:
-                row[29] = str(neben[6])
+                row[29] = str(neben[6]).replace("[","").replace("]","")
             else:
                 row[29]="-"
     else:
@@ -794,6 +813,14 @@ arcpy.AddField_management(in_table=stoshape, field_name="UEheuteAchtung", field_
 arcpy.AddField_management(in_table=stoshape, field_name="UEZukunftFoerdern", field_type="TEXT", field_precision="", field_scale="", field_length="800", field_alias="", field_is_nullable="NULLABLE", field_is_required="NON_REQUIRED", field_domain="")
 arcpy.AddField_management(in_table=stoshape, field_name="UEZukunftMitnehmen", field_type="TEXT", field_precision="", field_scale="", field_length="800", field_alias="", field_is_nullable="NULLABLE", field_is_required="NON_REQUIRED", field_domain="")
 arcpy.AddField_management(in_table=stoshape, field_name="UEZukunftAchtung", field_type="TEXT", field_precision="", field_scale="", field_length="250", field_alias="", field_is_nullable="NULLABLE", field_is_required="NON_REQUIRED", field_domain="")
+#overwrite field values if the columns already exist
+arcpy.CalculateField_management(in_table=stoshape, field="UEheuteFoerdern", expression='""', expression_type="PYTHON", code_block="")
+arcpy.CalculateField_management(in_table=stoshape, field="UEheuteMitnehmen", expression='""', expression_type="PYTHON", code_block="")
+arcpy.CalculateField_management(in_table=stoshape, field="UEheuteReduzieren", expression='""', expression_type="PYTHON", code_block="")
+arcpy.CalculateField_management(in_table=stoshape, field="UEheuteAchtung", expression='""', expression_type="PYTHON", code_block="")
+arcpy.CalculateField_management(in_table=stoshape, field="UEZukunftFoerdern", expression='""', expression_type="PYTHON", code_block="")
+arcpy.CalculateField_management(in_table=stoshape, field="UEZukunftMitnehmen", expression='""', expression_type="PYTHON", code_block="")
+arcpy.CalculateField_management(in_table=stoshape, field="UEZukunftAchtung", expression='""', expression_type="PYTHON", code_block="")
 
 #feature cursor
 cursor6 = arcpy.da.UpdateCursor(stoshape, ["uebergang", "NAISheuteHaupt", "NAISheuteNeben","XStandortZukunft","YStandortZukunft","UEheuteFoerdern","UEheuteMitnehmen","UEheuteReduzieren","UEheuteAchtung","UEZukunftFoerdern","UEZukunftMitnehmen", "UEZukunftAchtung"])
@@ -809,13 +836,34 @@ for row in cursor6:
     if uebergang ==1 and StandortstypXheute not in ["", "NA"] and StandortstypYheute not in ["", "NA"] and StandortstypXzukunft not in ["", "NA"] and StandortstypYzukunft not in ["", "NA"]:
         erg=Uebergang(matrixbaumartenarr, StandortstypXheute, StandortstypYheute, StandortstypXzukunft,StandortstypYzukunft)
         #erglist_heute_foerdern, erglist_heute_mitnehmen, erglist_heute_reduzieren, erglist_heute_achtung, erglist_zukunft_foerdern, erglist_zukunft_mitnehmen, erglist_zukunft_achtung
-        row[5]=str(erg[0])#.replace("[","").replace("]","") #UEheuteFoerdern
-        row[6] = str(erg[1])#.replace("[","").replace("]","")  #UEheuteMitnehmen
-        row[7] = str(erg[2])#.replace("[","").replace("]","")  #UEheuteReduzieren
-        row[8] = str(erg[3])#.replace("[","").replace("]","")  #UEheuteAchtung
-        row[9] = str(erg[4])#.replace("[","").replace("]","") #UEZukunftFoerdern
-        row[10] = str(erg[5])#.replace("[","").replace("]","")  #UEZukunftMitnehmen
-        row[11] = str(erg[6])#.replace("[","").replace("]","")  #UEZukunftAchtung"
+        if len(erg[0]) > 0:
+            row[5]=str(erg[0]).replace("[","").replace("]","") #UEheuteFoerdern
+        else:
+            row[5]="-"
+        if len(erg[0]) > 0:
+            row[6] = str(erg[1]).replace("[","").replace("]","")  #UEheuteMitnehmen
+        else:
+            row[6]="-"
+        if len(erg[0]) > 0:
+            row[7] = str(erg[2]).replace("[","").replace("]","")  #UEheuteReduzieren
+        else:
+            row[7] = "-"
+        if len(erg[0]) > 0:
+            row[8] = str(erg[3]).replace("[","").replace("]","")  #UEheuteAchtung
+        else:
+            row[8]="-"
+        if len(erg[0]) > 0:
+            row[9] = str(erg[4]).replace("[","").replace("]","") #UEZukunftFoerdern
+        else:
+            row[9]="-"
+        if len(erg[0]) > 0:
+            row[10] = str(erg[5]).replace("[","").replace("]","")  #UEZukunftMitnehmen
+        else:
+            row[10]="-"
+        if len(erg[0]) > 0:
+            row[11] = str(erg[6]).replace("[","").replace("]","")  #UEZukunftAchtung"
+        else:
+            row[11]="-"
     cursor6.updateRow(row)
 cursor6.reset()
 del cursor6
