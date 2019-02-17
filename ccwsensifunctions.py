@@ -959,8 +959,53 @@ def Projektionspfad_regJM12a2b3_SM_CO(NAIS_StandortstypHeute, standortsregion, h
             NAIS_StandortstypZukunft = "7Scollin"
         elif NAIS_StandortstypHeute == "9a":
             NAIS_StandortstypZukunft = "9acollin"
+        elif NAIS_StandortstypHeute == "46t":
+            NAIS_StandortstypZukunft = "7*collin"
     elif hoehenstufe_heute == "submontan" and hoehenstufe_zukunft == "collin" and standortsregion in ["2b","3"]:
-        print "noch zu implementieren"
+        if NAIS_StandortstypHeute == "6":
+            NAIS_StandortstypZukunft = "55collin"
+        elif NAIS_StandortstypHeute == "7a":
+            NAIS_StandortstypZukunft = "51collin"
+        elif NAIS_StandortstypHeute == "1":
+            NAIS_StandortstypZukunft = "46Mcollin"
+        elif NAIS_StandortstypHeute == "7*":
+            NAIS_StandortstypZukunft = "46collin"
+        elif NAIS_StandortstypHeute == "22":
+            NAIS_StandortstypZukunft = "48collin"
+        elif NAIS_StandortstypHeute == "7S":
+            NAIS_StandortstypZukunft = "50collin"
+        elif NAIS_StandortstypHeute == "34*":
+            NAIS_StandortstypZukunft = "47Hcollin"
+        elif NAIS_StandortstypHeute == "62":
+            NAIS_StandortstypZukunft = "53*collin"
+        elif NAIS_StandortstypHeute == "38":
+            NAIS_StandortstypZukunft = "65*collin"
+        elif NAIS_StandortstypHeute == "41*":
+            NAIS_StandortstypZukunft = "68collin"
+        elif NAIS_StandortstypHeute == "45":
+            NAIS_StandortstypZukunft = "45collin"
+        elif NAIS_StandortstypHeute == "25*":
+            NAIS_StandortstypZukunft = "23collin"
+        elif NAIS_StandortstypHeute == "25F":
+            NAIS_StandortstypZukunft = "24*collin"
+        elif NAIS_StandortstypHeute == "27":
+            NAIS_StandortstypZukunft = "27*collin"
+        elif NAIS_StandortstypHeute == "26":
+            NAIS_StandortstypZukunft = "27*collin"
+        elif NAIS_StandortstypHeute == "28":
+            NAIS_StandortstypZukunft = "32Ccollin"
+        elif NAIS_StandortstypHeute == "14":
+            NAIS_StandortstypZukunft = "52collin"
+        elif NAIS_StandortstypHeute == "7b":
+            NAIS_StandortstypZukunft = "49collin"
+        elif NAIS_StandortstypHeute == "9a":
+            NAIS_StandortstypZukunft = "50*collin"
+        elif NAIS_StandortstypHeute == "17":
+            NAIS_StandortstypZukunft = "60*collin"
+        elif NAIS_StandortstypHeute == "25":
+            NAIS_StandortstypZukunft = "24collin"
+        elif NAIS_StandortstypHeute == "66":
+            NAIS_StandortstypZukunft = "66collin"
     else:
         NAIS_StandortstypZukunft = "NA"
     return NAIS_StandortstypZukunft
@@ -1259,10 +1304,10 @@ def Projektionspfad_reg4_SA_HMTannenHaupt(NAIS_StandortstypHeute, standortsregio
 #standortsregion "4", Projektionspfad von hochmontan nach hochmontan Tannen-Reliktareal
 def Projektionspfad_reg4_HM_HMTannenRelikt(NAIS_StandortstypHeute, standortsregion, hoehenstufe_heute, hoehenstufe_zukunft, schatten, strahlungsreich, blockschutt, bodenverdichtet, trocken, kuppenlage, hanglage, muldenlage, VS, SH):
     NAIS_StandortstypZukunft = "NA"
-    if hoehenstufe_heute == "subalpin" and hoehenstufe_zukunft == "hochmontan im Tannen-Reliktareal":
+    if hoehenstufe_heute == "hochmontan" and hoehenstufe_zukunft == "hochmontan im Tannen-Reliktareal":
         if NAIS_StandortstypHeute in ["24", "56", "66", "68", "71", "23*", "24*", "27h", "32*", "32V", "40P", "40PBl",
                                       "43S", "47DRe", "47H", "47MRe", "47Re", "50*Re", "52Re", "53*", "55*", "55*Ta", "57Bl",
-                                      "58Bl", "59R", "AV", "46MRe"]:
+                                      "58Bl", "59R", "AV", "46MRe","25a"]:
             NAIS_StandortstypZukunft = NAIS_StandortstypHeute
         elif NAIS_StandortstypHeute == "47":
             NAIS_StandortstypZukunft = "47Re"
@@ -1317,7 +1362,7 @@ def Projektionspfad_reg4_HM_HMTanneHaupt(NAIS_StandortstypHeute, standortsregion
 #standortsregion "4", Projektionspfad von hochmontan nach collin
 def Projektionspfad_reg4_HM_CO(NAIS_StandortstypHeute, standortsregion, hoehenstufe_heute, hoehenstufe_zukunft, schatten, strahlungsreich, blockschutt, bodenverdichtet, trocken, kuppenlage, hanglage, muldenlage, VS, SH):
     NAIS_StandortstypZukunft = "NA"
-    if hoehenstufe_heute == "hochmontan" and hoehenstufe_zukunft == "collin":
+    if "hochmontan" in hoehenstufe_heute and hoehenstufe_zukunft == "collin":
         if NAIS_StandortstypHeute == "24":
             NAIS_StandortstypZukunft = "25a"
         elif NAIS_StandortstypHeute == "47":
@@ -1396,6 +1441,8 @@ def Projektionspfad_reg4_HM_CO(NAIS_StandortstypHeute, standortsregion, hoehenst
             NAIS_StandortstypZukunft = "k.A."
         elif NAIS_StandortstypHeute == "AV":
             NAIS_StandortstypZukunft = "25au"
+        elif NAIS_StandortstypHeute == "25a":
+            NAIS_StandortstypZukunft = "25a"
     else:
         NAIS_StandortstypZukunft = "NA"
     return NAIS_StandortstypZukunft
